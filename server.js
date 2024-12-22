@@ -18,7 +18,7 @@ mongoose.connect(process.env.MONGO_URI,)
 app.get("/api/stocks/:company", async (req, res) => {
     try {
         const company = req.params.company;
-        const data = await Stock.find({ company: company });
+        const data = await Stocks.find({ company: company });
         if (!data || data.length === 0) {
           return res.status(404).json({ message: `No data found for ${company}` });
         }
