@@ -45,7 +45,7 @@
 const { MongoClient } = require('mongodb');
 
 // Replace with your MongoDB connection string (for example, from Render's environment variables)
-const uri = 'process.env.MONGO_URI'; 
+const uri = process.env.MONGO_URI; 
 
 let db;
 
