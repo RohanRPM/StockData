@@ -11,8 +11,8 @@ app.use(express.json());
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+    // useNewUrlParser: true,
+    // useUnifiedTopology: true,
 })
 .then(() => console.log("Connected to MongoDB"))
 .catch(err => console.error("MongoDB connection error:", err));
@@ -23,9 +23,9 @@ app.get("/api/stocks/:company", async (req, res) => {
         const { company } = req.params;
 
         // Dynamic collection selection
-        const collection = mongoose.connection.collection(company);
-        const data = await collection.find().toArray();
-
+        const collection = mongoose.connection.db.collection(company);
+        const data = await collection.find({}).toArray();
+        
         if (data.length === 0) {
             return res.status(404).send(`No data found for ${company}`);
         }
