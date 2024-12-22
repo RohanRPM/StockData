@@ -19,11 +19,15 @@ mongoose.connect(process.env.MONGO_URI,)
 // Define Routes
 app.get('/api/Stocks/:company', async (req, res) => {
     try {
-      const company = req.params.company;
-      const stockData = await Stocks.find({ 'Company Name': company }); // Adjust field name accordingly
-      if (!stockData) {
-        return res.status(404).json({ message: 'No data found' });
+      const company = req.params.company;  // Get the company name from the URL
+  
+      // Dynamically get the collection by the company name
+      const stockData = await db.collection(company).find().toArray();
+  
+      if (stockData.length === 0) {
+        return res.status(404).json({ message: `No data found for ${company}` });
       }
+  
       res.json(stockData);
     } catch (error) {
       console.error('Error fetching data:', error);
