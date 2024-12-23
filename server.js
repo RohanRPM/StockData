@@ -1,52 +1,12 @@
-// const express = require("express");
-// const mongoose = require("mongoose");
-// const cors = require("cors");
-// require("dotenv").config();
-
-// const app = express();
-// const Stocks = require('./models/Stocks'); // Adjust the path to the actual location of your model
-
-
-// // Middleware
-// app.use(cors());
-// app.use(express.json());
-
-// // MongoDB Connection
-// mongoose.connect(process.env.MONGO_URI,)
-// .then(() => console.log("Connected to MongoDB"))
-// .catch(err => console.error("MongoDB connection error:", err));
-
-// // Define Routes
-// app.get('/api/Stocks/:company', async (req, res) => {
-//     try {
-//       const company = req.params.company;  // Get the company name from the URL
-  
-//       // Dynamically get the collection by the company name
-//       const stockData = await db.collection(company).find().toArray();
-  
-//       if (stockData.length === 0) {
-//         return res.status(404).json({ message: `No data found for ${company}` });
-//       }
-  
-//       res.json(stockData);
-//     } catch (error) {
-//       console.error('Error fetching data:', error);
-//       res.status(500).json({ message: 'Internal server error' });
-//     }
-//   });
-  
-
-// // Start Server
-// const port = process.env.PORT || 3000;
-// app.listen(port, () => {
-//     console.log(`Server running on http://localhost:${port}`);
-// });
-
-const { MongoClient } = require('mongodb');
 const express = require('express');
+const cors = require('cors');
+const { MongoClient } = require('mongodb');
 require('dotenv').config(); // Load environment variables from .env file
 
-// MongoDB Connection String
+const app = express();
+const port = process.env.PORT || 3000; // Use PORT from environment variables or default to 3000
+
+// MongoDB connection string
 const uri = process.env.MONGO_URI;
 
 if (!uri) {
@@ -54,15 +14,15 @@ if (!uri) {
   process.exit(1); // Exit the application if MONGO_URI is missing
 }
 
-const app = express();
-const port = process.env.PORT || 3000; // Use PORT from environment variables or default to 3000
+// Enable CORS for all origins (you can restrict this to specific origins if needed)
+app.use(cors());
+app.use(express.json());
 
+// MongoDB connection and initialization
 let db;
-
-// Connect to MongoDB and initialize the database
-MongoClient.connect(uri)
+MongoClient.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(client => {
-    db = client.db('Stocks'); // Set the database name
+    db = client.db('Stocks'); // Assuming the database name is "Stocks"
     console.log('Connected to MongoDB');
   })
   .catch(error => {
@@ -79,6 +39,7 @@ app.get('/api/Stocks/:company', async (req, res) => {
       return res.status(500).json({ message: 'Database not initialized' });
     }
 
+    // Fetch stock data from the collection based on the company name
     const stockData = await db.collection(company).find().toArray();
 
     if (stockData.length === 0) {
@@ -94,5 +55,5 @@ app.get('/api/Stocks/:company', async (req, res) => {
 
 // Start the server
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`Server is running on http://localhost:${port}`);
 });
