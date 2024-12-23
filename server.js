@@ -43,28 +43,42 @@
 // });
 
 const { MongoClient } = require('mongodb');
+const express = require('express');
+require('dotenv').config(); // Load environment variables from .env file
 
-// Replace with your MongoDB connection string (for example, from Render's environment variables)
-const uri = process.env.MONGO_URI; 
+// MongoDB Connection String
+const uri = process.env.MONGO_URI;
+
+if (!uri) {
+  console.error('Error: MONGO_URI not set in environment variables.');
+  process.exit(1); // Exit the application if MONGO_URI is missing
+}
+
+const app = express();
+const port = process.env.PORT || 3000; // Use PORT from environment variables or default to 3000
 
 let db;
 
-// Connect to MongoDB
-MongoClient.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+// Connect to MongoDB and initialize the database
+MongoClient.connect(uri)
   .then(client => {
-    db = client.db('Stocks'); // Set the database
-    console.log('Connected to Database');
+    db = client.db('Stocks'); // Set the database name
+    console.log('Connected to MongoDB');
   })
-  .catch(error => console.error('Error connecting to MongoDB:', error));
+  .catch(error => {
+    console.error('Error connecting to MongoDB:', error);
+    process.exit(1); // Exit the application on connection error
+  });
 
-// Set up your Express app and routes
-const express = require('express');
-const app = express();
-const port = 3000;
-
+// API route to fetch stock data for a company
 app.get('/api/Stocks/:company', async (req, res) => {
   try {
     const company = req.params.company;
+
+    if (!db) {
+      return res.status(500).json({ message: 'Database not initialized' });
+    }
+
     const stockData = await db.collection(company).find().toArray();
 
     if (stockData.length === 0) {
@@ -78,6 +92,7 @@ app.get('/api/Stocks/:company', async (req, res) => {
   }
 });
 
+// Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
